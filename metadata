@@ -1,0 +1,4 @@
+/media/jay/DDrive/Jay/IUB/Spring 2016/Assignment-4/DataSets/Cars/cars.csv
+6
+buying,maint,doors,persons,lug_boot,safety
+categorical,categorical,categorical,categorical,categorical,categorical
