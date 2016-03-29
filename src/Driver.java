@@ -17,11 +17,9 @@ public class Driver {
 
         readData(dataSet);
 
-        List<String> distinctItemsets = dataSet.getDistinctItemsets();
+        SparseMatrix sparseMatrix = new SparseMatrix(dataSet);
+        sparseMatrix.makeMatrix();
 
-        distinctItemsets.forEach(System.out::println);
-
-        System.out.println(distinctItemsets.size());
     }
 
     private static void readData(DataSet dataSet) {

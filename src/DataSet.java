@@ -65,16 +65,23 @@ public class DataSet {
         this.distinctValuesPerColumn = distinctValuesPerColumn;
     }
 
-    public List<String> getDistinctItemsets() {
-        List<String> itemsets = new ArrayList<>();
+    public HashMap<String, Integer> getDistinctItemsets() {
+        HashMap<String, Integer> itemsetsVsId = new HashMap<>();
 
+        int id = 1;
         for (String attributeName : attributeNames) {
             Set<String> distinctValues = this.getDistinctValuesPerColumn().get(attributeName);
             for (String distinctValue : distinctValues) {
-                itemsets.add(attributeName + "_" + distinctValue);
+                itemsetsVsId.put(attributeName + "_" + distinctValue, id);
+                id++;
             }
         }
-        itemsets.addAll(classLabels);
-        return itemsets;
+
+        for (String classLabel : this.classLabels) {
+            itemsetsVsId.put(classLabel, id);
+            id++;
+        }
+
+        return itemsetsVsId;
     }
 }
