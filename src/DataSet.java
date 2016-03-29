@@ -1,17 +1,24 @@
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by jay on 3/28/16.
  */
 public class DataSet {
 
-    public int totalAttributes;
-    public List<String> attributeNames;
-    public List<String> attributeTypes;
-    public List<String> classLabels;
-    public HashMap<String, List<String>> distinctValuesPerColumn;
-    public String pathToFile;
+    private int totalAttributes;
+    private List<String> attributeNames;
+    private List<String> attributeTypes;
+    private Set<String> classLabels;
+    private HashMap<String, Set<String>> distinctValuesPerColumn;
+    private String pathToFile;
+
+    public DataSet() {
+        this.distinctValuesPerColumn = new HashMap<>();
+        this.classLabels = new HashSet<>();
+    }
 
     public int getTotalAttributes() {
         return totalAttributes;
@@ -45,19 +52,19 @@ public class DataSet {
         this.attributeTypes = attributeTypes;
     }
 
-    public List<String> getClassLabels() {
+    public Set<String> getClassLabels() {
         return classLabels;
     }
 
-    public void setClassLabels(List<String> classLabels) {
+    public void setClassLabels(Set<String> classLabels) {
         this.classLabels = classLabels;
     }
 
-    public HashMap<String, List<String>> getDistinctValuesPerColumn() {
+    public HashMap<String, Set<String>> getDistinctValuesPerColumn() {
         return distinctValuesPerColumn;
     }
 
-    public void setDistinctValuesPerColumn(HashMap<String, List<String>> distinctValuesPerColumn) {
+    public void setDistinctValuesPerColumn(HashMap<String, Set<String>> distinctValuesPerColumn) {
         this.distinctValuesPerColumn = distinctValuesPerColumn;
     }
 }
