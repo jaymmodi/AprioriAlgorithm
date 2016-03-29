@@ -95,4 +95,8 @@ public class DataSet {
 
         return itemsetsVsId;
     }
+
+    public int size() {
+        return this.instances.size();
+    }
 }

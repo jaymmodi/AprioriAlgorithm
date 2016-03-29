@@ -8,7 +8,7 @@ import java.util.List;
 public class SparseMatrix {
 
     private HashMap<String, Integer> itemsetVsId;
-    private DataSet dataSet;
+    public DataSet dataSet;
     private HashMap<Integer, List<Integer>> idVsIsPresentMap;
 
     public SparseMatrix(DataSet dataSet) {
@@ -16,6 +16,7 @@ public class SparseMatrix {
         this.itemsetVsId = new HashMap<>();
         this.idVsIsPresentMap = new HashMap<>();
     }
+
 
     public HashMap<Integer, List<Integer>> getIdVsIsPresentMap() {
         return idVsIsPresentMap;

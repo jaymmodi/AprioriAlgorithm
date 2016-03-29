@@ -20,6 +20,9 @@ public class Driver {
         SparseMatrix sparseMatrix = new SparseMatrix(dataSet);
         sparseMatrix.makeMatrix();
 
+        Algorithm algorithm = new Algorithm(sparseMatrix);
+        algorithm.run();
+
     }
 
     private static void readData(DataSet dataSet) {
