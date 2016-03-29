@@ -11,10 +11,21 @@ public class DataSet {
     private Set<String> classLabels;
     private HashMap<String, Set<String>> distinctValuesPerColumn;
     private String pathToFile;
+    private List<String> instances;
 
     public DataSet() {
         this.distinctValuesPerColumn = new HashMap<>();
         this.classLabels = new HashSet<>();
+        this.instances = new ArrayList<>();
+    }
+
+
+    public List<String> getInstances() {
+        return instances;
+    }
+
+    public void setInstances(List<String> instances) {
+        this.instances = instances;
     }
 
     public int getTotalAttributes() {

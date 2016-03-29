@@ -30,7 +30,7 @@ public class Driver {
 
             while ((line = bufferedReader.readLine()) != null) {
                 String[] values = line.split(",");
-
+                dataSet.getInstances().add(line);
                 findDistinctValuesPerColumn(values, dataSet);
 
             }
