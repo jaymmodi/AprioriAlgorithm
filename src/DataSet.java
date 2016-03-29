@@ -1,7 +1,4 @@
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by jay on 3/28/16.
@@ -66,5 +63,18 @@ public class DataSet {
 
     public void setDistinctValuesPerColumn(HashMap<String, Set<String>> distinctValuesPerColumn) {
         this.distinctValuesPerColumn = distinctValuesPerColumn;
+    }
+
+    public List<String> getDistinctItemsets() {
+        List<String> itemsets = new ArrayList<>();
+
+        for (String attributeName : attributeNames) {
+            Set<String> distinctValues = this.getDistinctValuesPerColumn().get(attributeName);
+            for (String distinctValue : distinctValues) {
+                itemsets.add(attributeName + "_" + distinctValue);
+            }
+        }
+        itemsets.addAll(classLabels);
+        return itemsets;
     }
 }

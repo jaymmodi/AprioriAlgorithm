@@ -3,10 +3,7 @@ import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by jay on 3/28/16.
@@ -14,14 +11,17 @@ import java.util.Set;
 public class Driver {
 
     public static void main(String[] args) {
-        System.out.println("Jay");
-
         DataSet dataSet = new DataSet();
 
         readMetaData(dataSet, "metadata");
 
         readData(dataSet);
-        System.out.println("Jay");
+
+        List<String> distinctItemsets = dataSet.getDistinctItemsets();
+
+        distinctItemsets.forEach(System.out::println);
+
+        System.out.println(distinctItemsets.size());
     }
 
     private static void readData(DataSet dataSet) {
@@ -31,7 +31,6 @@ public class Driver {
             String line;
 
             while ((line = bufferedReader.readLine()) != null) {
-                System.out.println(line);
                 String[] values = line.split(",");
 
                 findDistinctValuesPerColumn(values, dataSet);
