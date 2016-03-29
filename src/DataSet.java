@@ -11,9 +11,18 @@ public class DataSet {
     public List<String> attributeTypes;
     public List<String> classLabels;
     public HashMap<String, List<String>> distinctValuesPerColumn;
+    public String pathToFile;
 
     public int getTotalAttributes() {
         return totalAttributes;
+    }
+
+    public String getPathToFile() {
+        return pathToFile;
+    }
+
+    public void setPathToFile(String pathToFile) {
+        this.pathToFile = pathToFile;
     }
 
     public void setTotalAttributes(int totalAttributes) {
