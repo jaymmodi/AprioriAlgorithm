@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -19,49 +20,91 @@ public class Algorithm {
         this.candidateGenerationType = candidateGenerationType;
     }
 
-    public HashMap<Integer, List<Integer>> getSparseMap() {
-        return sparseMap;
-    }
-
     public void run() {
 
-        List<String> freqItemsets = getFrequentItemsets(this.allCandidatesWithId.keySet());
-        System.out.println(freqItemsets.size());
-
         int k = 1;
-        while (freqItemsets != null) {
+        List<String> freqItemsetsOfSizeOne = getFrequentItemsetsOfSize1(this.allCandidatesWithId.keySet(), k);
+        System.out.println(freqItemsetsOfSizeOne.size());
+
+        List<Set<String>> freqItemsetsHighK = new ArrayList<>();
+        while (freqItemsetsHighK != null) {
             ++k;
-            Set<String> candidateItemsets = getCandidateItemsets(freqItemsets, k);
-            freqItemsets = getFrequentItemsets(candidateItemsets);
+            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, k);
+
         }
     }
 
-    private Set<String> getCandidateItemsets(List<String> freqItemsets, int k) {
+    private List<String> getFrequentItemsetsOfSize1(Set<String> allCandidates, int k) {
+
+        return allCandidates.
+                stream()
+                .filter(string -> getSupportCount(string, k) > this.supportThreshold)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne, int k) {
         if (this.candidateGenerationType.equals("1")) {
-            return candidateKInto1(freqItemsets, k);
+            return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne, k);
         } else {
             return candidateKIntoKMinus1(freqItemsets, k);
         }
     }
 
-    private Set<String> candidateKIntoKMinus1(List<String> freqItemsets, int k) {
+    private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets, int k) {
         return null;
     }
 
-    private Set<String> candidateKInto1(List<String> freqItemsets, int k) {
-        return null;
+    private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1, int k) {
+
+        if (freqItemsetsOfSizeK.isEmpty()) {
+            addDataToItemsets(freqItemsetsOfSizeK, freqItemsetsOfSize1);
+        }
+
+        Set<String> candidatesItemsetsK = new HashSet<>();
+        for (Set<String> itemset : freqItemsetsOfSizeK) {
+            String freqKItemsets = String.join(",", itemset);
+            String lastString = ((TreeSet<String>) itemset).last();
+            freqItemsetsOfSize1.stream().
+                    filter(freq1Itemset -> lastString.compareToIgnoreCase(freq1Itemset) < 0)
+                    .forEachOrdered(freq1Itemset -> {
+                        String candidate = String.join(",", freqKItemsets, freq1Itemset);
+                        candidatesItemsetsK.add(candidate);
+                    });
+        }
+
+        return candidatesItemsetsK;
     }
 
-    private List<String> getFrequentItemsets(Set<String> allCandidates) {
+    private void addDataToItemsets(List<Set<String>> itemsets, List<String> freqItemsetsOfSize1) {
+
+        Function<String, Set<String>> convertToSet = string -> {
+            Set<String> sortedSet = new TreeSet<>();
+            sortedSet.add(string);
+            return sortedSet;
+        };
+
+        itemsets.addAll(freqItemsetsOfSize1.stream()
+                .map(convertToSet)
+                .collect(Collectors.toList()));
+    }
+
+
+    private List<Set<String>> getFrequentItemsets(Set<String> allCandidates, int k) {
+
+        Function<String, Set<String>> convertToSet = string -> {
+            Set<String> sortedSet = new TreeSet<>();
+            sortedSet.add(string);
+            return sortedSet;
+        };
 
         return allCandidates.
                 stream()
-                .filter(string -> getSupportCount(string) > this.supportThreshold)
+                .filter(string -> getSupportCount(string, k) > this.supportThreshold)
+                .map(convertToSet)
                 .collect(Collectors.toCollection(ArrayList::new));
-
     }
 
-    public int getSupportCount(String pattern) {
+    public int getSupportCount(String pattern, int k) {
         String[] individualItemsets = pattern.split(",");
         int count = 0;
         int internalCount;
@@ -75,7 +118,7 @@ public class Algorithm {
                     internalCount++;
                 }
             }
-            if (internalCount == individualItemsets.length) {
+            if (internalCount == k) {
                 count++;
             }
         }
