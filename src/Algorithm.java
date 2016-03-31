@@ -9,12 +9,14 @@ public class Algorithm {
     private HashMap<Integer, List<Integer>> sparseMap;
     private int supportThreshold;
     private HashMap<String, Integer> allCandidatesWithId;
+    private String candidateGenerationType;
 
-    public Algorithm(SparseMatrix sparseMatrix) {
+    public Algorithm(SparseMatrix sparseMatrix, String candidateGenerationType) {
         DataSet dataSet = sparseMatrix.dataSet;
         this.sparseMap = sparseMatrix.getIdVsIsPresentMap();
-        this.supportThreshold = 10;
+        this.supportThreshold = 500;
         this.allCandidatesWithId = dataSet.getDistinctItemsets();
+        this.candidateGenerationType = candidateGenerationType;
     }
 
     public HashMap<Integer, List<Integer>> getSparseMap() {
@@ -22,14 +24,32 @@ public class Algorithm {
     }
 
     public void run() {
-        //f1
-        // support counting
-        List<String> freqItemsets = getFrequentItemsets(this.allCandidatesWithId.keySet());
-        // use f1 to get candidate itemset of size 2.
-        // support count
 
-        // iterate till there are no frequent itemsets
-        // return all frequent itemsets.
+        List<String> freqItemsets = getFrequentItemsets(this.allCandidatesWithId.keySet());
+        System.out.println(freqItemsets.size());
+
+        int k = 1;
+        while (freqItemsets != null) {
+            ++k;
+            Set<String> candidateItemsets = getCandidateItemsets(freqItemsets, k);
+            freqItemsets = getFrequentItemsets(candidateItemsets);
+        }
+    }
+
+    private Set<String> getCandidateItemsets(List<String> freqItemsets, int k) {
+        if (this.candidateGenerationType.equals("1")) {
+            return candidateKInto1(freqItemsets, k);
+        } else {
+            return candidateKIntoKMinus1(freqItemsets, k);
+        }
+    }
+
+    private Set<String> candidateKIntoKMinus1(List<String> freqItemsets, int k) {
+        return null;
+    }
+
+    private Set<String> candidateKInto1(List<String> freqItemsets, int k) {
+        return null;
     }
 
     private List<String> getFrequentItemsets(Set<String> allCandidates) {

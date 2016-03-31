@@ -1,9 +1,14 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by jay on 3/28/16.
@@ -20,9 +25,33 @@ public class Driver {
         SparseMatrix sparseMatrix = new SparseMatrix(dataSet);
         sparseMatrix.makeMatrix();
 
-        Algorithm algorithm = new Algorithm(sparseMatrix);
+        String candidateTypeGeneration = getCandidateGenerationType();
+        Algorithm algorithm = new Algorithm(sparseMatrix, candidateTypeGeneration);
         algorithm.run();
 
+    }
+
+    private static String getCandidateGenerationType() {
+        System.out.println("Please select a number for candidate Generation Process");
+        System.out.println("1. F(k-1) * F(1)  2. F(k-1) * F(k-1)");
+        String line = null;
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in))) {
+            line = bufferedReader.readLine();
+
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (line.equals("1") || line.equalsIgnoreCase("F(k-1) * F(1)")) {
+            return "1";
+        } else if (line.equals("2") || line.equalsIgnoreCase("F(k-1) * F(k-1)")) {
+            return "2";
+        } else {
+            System.out.println("Please provide correct input in your next attempt");
+            System.exit(1);
+        }
+        return null;
     }
 
     private static void readData(DataSet dataSet) {
@@ -90,4 +119,6 @@ public class Driver {
             e.printStackTrace();
         }
     }
+
+
 }
