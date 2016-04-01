@@ -41,7 +41,7 @@ public class Algorithm {
 
         while (true) {
             ++k;
-            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, k);
+            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne);
 
             System.out.println("************ k = " + k + " ****************");
             System.out.println("Candidates = " + candidateItemsets.size());
@@ -101,20 +101,16 @@ public class Algorithm {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne, int k) {
-
-//        if (freqItemsets.isEmpty()) {
-//            addDataToItemsets(freqItemsets, freqItemsetsOfSizeOne);
-//        }
+    private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne) {
 
         if (this.candidateGenerationType.equals("1")) {
-            return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne, k);
+            return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne);
         } else {
-            return candidateKIntoKMinus1(freqItemsets, k);
+            return candidateKIntoKMinus1(freqItemsets);
         }
     }
 
-    private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets, int k) {
+    private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets) {
         Set<String> candidateItemsetsK = new HashSet<>();
 
         for (Set<String> freqItemset : freqItemsets) {
@@ -152,7 +148,7 @@ public class Algorithm {
         return candidateItemsetsK;
     }
 
-    private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1, int k) {
+    private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1) {
 
         Set<String> candidatesItemsetsK = new HashSet<>();
         for (Set<String> itemset : freqItemsetsOfSizeK) {
@@ -171,21 +167,7 @@ public class Algorithm {
 
         return candidatesItemsetsK;
     }
-
-    private void addDataToItemsets(List<Set<String>> itemsets, List<String> freqItemsetsOfSize1) {
-
-        Function<String, Set<String>> convertToSet = string -> {
-            Set<String> sortedSet = new TreeSet<>();
-            sortedSet.add(string);
-            return sortedSet;
-        };
-
-        itemsets.addAll(freqItemsetsOfSize1.stream()
-                .map(convertToSet)
-                .collect(Collectors.toList()));
-    }
-
-
+    
     private List<Set<String>> getFrequentItemsets(Set<String> allCandidates, int k) {
 
         this.wordCount.clear();
