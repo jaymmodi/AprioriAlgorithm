@@ -30,7 +30,15 @@ public class Algorithm {
         List<String> freqItemsetsOfSizeOne = getFrequentItemsetsOfSize1(this.allCandidatesWithId.keySet(), k);
         System.out.println("Frequent" + freqItemsetsOfSizeOne.size());
 
-        List<Set<String>> freqItemsetsHighK = new ArrayList<>();
+        ++k;
+        System.out.println("************ k = " + k + " ****************");
+        Set<String> candidatesItemsetsFor2 = getCandidateItemsetsForSize2(freqItemsetsOfSizeOne);
+        System.out.println("Candidates = " + candidatesItemsetsFor2.size());
+        candidatePrune(candidatesItemsetsFor2, k);
+        System.out.println("Candidates after pruning = " + candidatesItemsetsFor2.size());
+        List<Set<String>> freqItemsetsHighK = getFrequentItemsets(candidatesItemsetsFor2, k);
+        System.out.println("Frequent = " + freqItemsetsHighK.size());
+
         while (true) {
             ++k;
             Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, k);
@@ -57,23 +65,32 @@ public class Algorithm {
         System.out.println(freqItemsetsHighK);
     }
 
+    private Set<String> getCandidateItemsetsForSize2(List<String> freqItemsetsOfSizeOne) {
+        Set<String> size2 = new HashSet<>();
+
+        for (String outerString : freqItemsetsOfSizeOne) {
+            size2.addAll(freqItemsetsOfSizeOne.stream()
+                    .filter(innerString -> outerString.compareToIgnoreCase(innerString) < 0)
+                    .map(innerString -> String.join(",", outerString, innerString))
+                    .collect(Collectors.toList()));
+        }
+        return size2;
+    }
+
     private void candidatePrune(Set<String> candidateItemsets, int k) {
         Set<String> prunedCandidates = new HashSet<>();
-        if (k != 2) {
-            for (String pattern : candidateItemsets) {
-                String[] candidates = pattern.split(",");
+        for (String pattern : candidateItemsets) {
+            String[] candidates = pattern.split(",");
 
-                boolean allMaTch = Arrays.stream(candidates)
-                        .allMatch(candidate -> this.wordCount.get(candidate) > k - 1);
-                if (allMaTch) {
-                    prunedCandidates.add(pattern);
-                }
-
+            boolean allMaTch = Arrays.stream(candidates)
+                    .allMatch(candidate -> this.wordCount.get(candidate) > k - 1);
+            if (allMaTch) {
+                prunedCandidates.add(pattern);
             }
-            candidateItemsets.clear();
-            candidateItemsets.addAll(prunedCandidates);
-        }
 
+        }
+        candidateItemsets.clear();
+        candidateItemsets.addAll(prunedCandidates);
     }
 
     private List<String> getFrequentItemsetsOfSize1(Set<String> allCandidates, int k) {
@@ -85,6 +102,11 @@ public class Algorithm {
     }
 
     private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne, int k) {
+
+//        if (freqItemsets.isEmpty()) {
+//            addDataToItemsets(freqItemsets, freqItemsetsOfSizeOne);
+//        }
+
         if (this.candidateGenerationType.equals("1")) {
             return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne, k);
         } else {
@@ -93,22 +115,54 @@ public class Algorithm {
     }
 
     private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets, int k) {
-        return null;
+        Set<String> candidateItemsetsK = new HashSet<>();
+
+        for (Set<String> freqItemset : freqItemsets) {
+
+            String freqItemsetsPatternOutside = String.join(",", freqItemset);
+            String[] allCandidatesOutside = freqItemsetsPatternOutside.split(",");
+            String totalMinusLastOutside = Arrays.stream(allCandidatesOutside)
+                    .limit(allCandidatesOutside.length - 1)
+                    .collect(Collectors.joining(","));
+
+            String outside = allCandidatesOutside[allCandidatesOutside.length - 1];
+
+            for (Set<String> itemset : freqItemsets) {
+
+                String freqItemsetsPatternInside = String.join(",", itemset);
+                String[] allCandidatesInside = freqItemsetsPatternInside.split(",");
+                String totalMinusLastInside = Arrays.stream(allCandidatesInside)
+                        .limit(allCandidatesInside.length - 1)
+                        .collect(Collectors.joining(","));
+
+                String inside = allCandidatesInside[allCandidatesOutside.length - 1];
+
+                if (totalMinusLastOutside.equalsIgnoreCase(totalMinusLastInside) && !outside.equalsIgnoreCase(inside)) {
+                    if (inside.compareToIgnoreCase(outside) < 0) {
+                        candidateItemsetsK.add(String.join(",", totalMinusLastInside, inside, outside));
+                    } else {
+                        candidateItemsetsK.add(String.join(",", totalMinusLastInside, outside, inside));
+                    }
+                }
+
+            }
+
+        }
+
+        return candidateItemsetsK;
     }
 
     private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1, int k) {
 
-        if (freqItemsetsOfSizeK.isEmpty()) {
-            addDataToItemsets(freqItemsetsOfSizeK, freqItemsetsOfSize1);
-        }
-
         Set<String> candidatesItemsetsK = new HashSet<>();
         for (Set<String> itemset : freqItemsetsOfSizeK) {
+
             String freqKItemsets = String.join(",", itemset);
             String[] allValues = freqKItemsets.split(",");
             String lastString = allValues[allValues.length - 1];
-            freqItemsetsOfSize1.stream().
-                    filter(freq1Itemset -> lastString.compareToIgnoreCase(freq1Itemset) < 0)
+
+            freqItemsetsOfSize1.stream()
+                    .filter(freq1Itemset -> lastString.compareToIgnoreCase(freq1Itemset) < 0)
                     .forEachOrdered(freq1Itemset -> {
                         String candidate = String.join(",", freqKItemsets, freq1Itemset);
                         candidatesItemsetsK.add(candidate);
@@ -158,6 +212,7 @@ public class Algorithm {
         int count = 0;
         int internalCount;
 
+
         for (Map.Entry<Integer, List<Integer>> transactionsWithId : this.sparseMap.entrySet()) {
             List<Integer> transaction = transactionsWithId.getValue();
             internalCount = 0;
@@ -165,19 +220,22 @@ public class Algorithm {
             for (String itemset : individualItemsets) {
                 if (transaction.contains(this.allCandidatesWithId.get(itemset))) {
                     internalCount++;
+                    addToWordCountMap(itemset, 1);
                 }
             }
             if (internalCount == k) {
                 count++;
             }
         }
-        addToWordCountMap(individualItemsets, count);
 
         return count;
     }
 
-    private void addToWordCountMap(String[] individualItemsets, int count) {
-        for (String string : individualItemsets) {
+    private void addToWordCountMap(String string, int count) {
+        if (this.wordCount.containsKey(string)) {
+            int prevCount = this.wordCount.get(string);
+            this.wordCount.put(string, prevCount + count);
+        } else {
             this.wordCount.put(string, count);
         }
     }
