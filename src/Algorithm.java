@@ -11,27 +11,69 @@ public class Algorithm {
     private int supportThreshold;
     private HashMap<String, Integer> allCandidatesWithId;
     private String candidateGenerationType;
+    private HashMap<String, Integer> wordCount;
 
     public Algorithm(SparseMatrix sparseMatrix, String candidateGenerationType) {
         DataSet dataSet = sparseMatrix.dataSet;
         this.sparseMap = sparseMatrix.getIdVsIsPresentMap();
-        this.supportThreshold = 500;
+        this.supportThreshold = 100;
         this.allCandidatesWithId = dataSet.getDistinctItemsets();
         this.candidateGenerationType = candidateGenerationType;
+        this.wordCount = new HashMap<>();
     }
 
     public void run() {
 
         int k = 1;
+        System.out.println("************ k = " + k + " ****************");
+        System.out.println("Candidates = " + this.allCandidatesWithId.size());
         List<String> freqItemsetsOfSizeOne = getFrequentItemsetsOfSize1(this.allCandidatesWithId.keySet(), k);
-        System.out.println(freqItemsetsOfSizeOne.size());
+        System.out.println("Frequent" + freqItemsetsOfSizeOne.size());
 
         List<Set<String>> freqItemsetsHighK = new ArrayList<>();
-        while (freqItemsetsHighK != null) {
+        while (true) {
             ++k;
             Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, k);
 
+            System.out.println("************ k = " + k + " ****************");
+            System.out.println("Candidates = " + candidateItemsets.size());
+
+            candidatePrune(candidateItemsets, k);
+            System.out.println("Candidates after pruning= " + candidateItemsets.size());
+
+
+            List<Set<String>> tempItemsets = getFrequentItemsets(candidateItemsets, k);
+
+            if (tempItemsets == null || tempItemsets.size() == 0) {
+                break;
+            } else {
+                freqItemsetsHighK.clear();
+                freqItemsetsHighK.addAll(tempItemsets);
+                System.out.println("Frequent = " + freqItemsetsHighK.size());
+            }
         }
+        System.out.println("********************************");
+        System.out.println("Actual Frequent Size = " + freqItemsetsHighK.size());
+        System.out.println(freqItemsetsHighK);
+    }
+
+    private void candidatePrune(Set<String> candidateItemsets, int k) {
+        Set<String> prunedCandidates = new HashSet<>();
+        if (k != 2) {
+            for (String pattern : candidateItemsets) {
+                String[] candidates = pattern.split(",");
+
+                boolean allMaTch = Arrays.stream(candidates)
+                        .allMatch(candidate -> this.wordCount.get(candidate) > k - 1);
+                if (allMaTch) {
+                    prunedCandidates.add(pattern);
+                }
+
+            }
+            candidateItemsets.clear();
+            candidateItemsets.addAll(prunedCandidates);
+        }
+
     }
 
     private List<String> getFrequentItemsetsOfSize1(Set<String> allCandidates, int k) {
@@ -63,7 +105,8 @@ public class Algorithm {
         Set<String> candidatesItemsetsK = new HashSet<>();
         for (Set<String> itemset : freqItemsetsOfSizeK) {
             String freqKItemsets = String.join(",", itemset);
-            String lastString = ((TreeSet<String>) itemset).last();
+            String[] allValues = freqKItemsets.split(",");
+            String lastString = allValues[allValues.length - 1];
             freqItemsetsOfSize1.stream().
                     filter(freq1Itemset -> lastString.compareToIgnoreCase(freq1Itemset) < 0)
                     .forEachOrdered(freq1Itemset -> {
@@ -91,17 +134,23 @@ public class Algorithm {
 
     private List<Set<String>> getFrequentItemsets(Set<String> allCandidates, int k) {
 
-        Function<String, Set<String>> convertToSet = string -> {
-            Set<String> sortedSet = new TreeSet<>();
-            sortedSet.add(string);
-            return sortedSet;
-        };
+        this.wordCount.clear();
 
-        return allCandidates.
-                stream()
-                .filter(string -> getSupportCount(string, k) > this.supportThreshold)
-                .map(convertToSet)
-                .collect(Collectors.toCollection(ArrayList::new));
+        if (!allCandidates.isEmpty()) {
+            Function<String, Set<String>> convertToSet = string -> {
+                Set<String> sortedSet = new TreeSet<>();
+                sortedSet.add(string);
+                return sortedSet;
+            };
+
+            return allCandidates.
+                    stream()
+                    .filter(string -> getSupportCount(string, k) > this.supportThreshold)
+                    .map(convertToSet)
+                    .collect(Collectors.toCollection(ArrayList::new));
+        } else {
+            return null;
+        }
     }
 
     public int getSupportCount(String pattern, int k) {
@@ -122,7 +171,14 @@ public class Algorithm {
                 count++;
             }
         }
+        addToWordCountMap(individualItemsets, count);
 
         return count;
+    }
+
+    private void addToWordCountMap(String[] individualItemsets, int count) {
+        for (String string : individualItemsets) {
+            this.wordCount.put(string, count);
+        }
     }
 }
