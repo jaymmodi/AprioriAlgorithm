@@ -5,10 +5,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by jay on 3/28/16.
@@ -27,8 +24,10 @@ public class Driver {
 
         String candidateTypeGeneration = getCandidateGenerationType();
         Algorithm algorithm = new Algorithm(sparseMatrix, candidateTypeGeneration);
-        algorithm.run();
+        List<Set<String>> frequentItemsets = algorithm.run();
 
+        GenerateRule generateRule = new GenerateRule(frequentItemsets);
+        System.out.println("Total Rules = " + generateRule.getAllRules().size());
     }
 
     private static String getCandidateGenerationType() {

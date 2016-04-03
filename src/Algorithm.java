@@ -22,7 +22,7 @@ public class Algorithm {
         this.wordCount = new HashMap<>();
     }
 
-    public void run() {
+    public List<Set<String>> run() {
 
         int totalFrequentSize = 0;
         int k = 1;
@@ -72,6 +72,9 @@ public class Algorithm {
         System.out.println("Total Closed Frequent Itemsets = " + closedItemsets.size());
         System.out.println("Total Number of Frequent Itemsets = " + totalFrequentSize);
         System.out.println("Actual Frequent Itemsets used for Rule Generation = " + freqItemsetsHighK.size());
+        System.out.println(freqItemsetsHighK);
+
+        return freqItemsetsHighK;
     }
 
     private Set<String> getCandidateItemsetsForSize2(List<String> freqItemsetsOfSizeOne, List<String> maximalItemsets, List<String> closedItemsets) {
