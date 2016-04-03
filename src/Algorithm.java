@@ -27,6 +27,8 @@ public class Algorithm {
         int totalFrequentSize = 0;
         int k = 1;
         List<String> maximalItemsets = new ArrayList<>();
+        List<String> closedItemsets = new ArrayList<>();
+
         System.out.println("************ k = " + k + " ****************");
         System.out.println("Candidates = " + this.allCandidatesWithId.size());
         List<String> freqItemsetsOfSizeOne = getFrequentItemsetsOfSize1(this.allCandidatesWithId.keySet(), k);
@@ -34,7 +36,7 @@ public class Algorithm {
         totalFrequentSize += freqItemsetsOfSizeOne.size();
 
         ++k;
-        Set<String> candidatesItemsetsFor2 = getCandidateItemsetsForSize2(freqItemsetsOfSizeOne, maximalItemsets);
+        Set<String> candidatesItemsetsFor2 = getCandidateItemsetsForSize2(freqItemsetsOfSizeOne, maximalItemsets, closedItemsets);
         System.out.println("************ k = " + k + " ****************");
         System.out.println("Candidates = " + candidatesItemsetsFor2.size());
         candidatePrune(candidatesItemsetsFor2, k);
@@ -45,7 +47,7 @@ public class Algorithm {
 
         while (true) {
             ++k;
-            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, maximalItemsets, k);
+            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, maximalItemsets, closedItemsets, k);
             System.out.println("************ k = " + k + " ****************");
 
             System.out.println("Candidates = " + candidateItemsets.size());
@@ -61,16 +63,18 @@ public class Algorithm {
             } else {
                 freqItemsetsHighK.clear();
                 freqItemsetsHighK.addAll(tempItemsets);
+                System.out.println("Frequent = " + freqItemsetsHighK.size());
                 totalFrequentSize += freqItemsetsHighK.size();
             }
         }
         System.out.println("********************************");
         System.out.println("Total Maximal Frequent Itemsets = " + maximalItemsets.size());
+        System.out.println("Total Closed Frequent Itemsets = " + closedItemsets.size());
         System.out.println("Total Number of Frequent Itemsets = " + totalFrequentSize);
         System.out.println("Actual Frequent Itemsets used for Rule Generation = " + freqItemsetsHighK.size());
     }
 
-    private Set<String> getCandidateItemsetsForSize2(List<String> freqItemsetsOfSizeOne, List<String> maximalItemsets) {
+    private Set<String> getCandidateItemsetsForSize2(List<String> freqItemsetsOfSizeOne, List<String> maximalItemsets, List<String> closedItemsets) {
         Set<String> size2 = new HashSet<>();
 
         for (String outerString : freqItemsetsOfSizeOne) {
@@ -83,8 +87,19 @@ public class Algorithm {
             if (isMaximalFrequent(superSets, 2)) {
                 maximalItemsets.add(outerString);
             }
+
+            if (isClosedFrequent(superSets, outerString, 2)) {
+                closedItemsets.add(outerString);
+            }
         }
         return size2;
+    }
+
+    private boolean isClosedFrequent(List<String> superSets, String itemset, int k) {
+        int supportCount = getSupportCount(itemset, k - 1);
+
+        return superSets.stream()
+                .allMatch(string -> getSupportCount(string, k) < supportCount);
     }
 
     private boolean isMaximalFrequent(List<String> superSets, int k) {
@@ -116,17 +131,18 @@ public class Algorithm {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne, List<String> maximalItemsets, int k) {
+    private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne, List<String> maximalItemsets, List<String> closedItemsets, int k) {
 
         if (this.candidateGenerationType.equals("1")) {
-            return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne, maximalItemsets, k);
+            return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne, maximalItemsets, closedItemsets, k);
         } else {
-            return candidateKIntoKMinus1(freqItemsets, maximalItemsets, k);
+            return candidateKIntoKMinus1(freqItemsets, maximalItemsets, closedItemsets, k);
         }
     }
 
-    private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets, List<String> maximalItemsets, int k) {
+    private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets, List<String> maximalItemsets, List<String> closedItemsets, int k) {
         Set<String> candidateItemsetsK = new HashSet<>();
+        List<String> superSets = new ArrayList<>();
 
         for (Set<String> freqItemset : freqItemsets) {
 
@@ -138,6 +154,8 @@ public class Algorithm {
 
             String outside = allCandidatesOutside[allCandidatesOutside.length - 1];
 
+            superSets.clear();
+
             for (Set<String> itemset : freqItemsets) {
 
                 String freqItemsetsPatternInside = String.join(",", itemset);
@@ -148,22 +166,31 @@ public class Algorithm {
 
                 String inside = allCandidatesInside[allCandidatesOutside.length - 1];
 
+
                 if (totalMinusLastOutside.equalsIgnoreCase(totalMinusLastInside) && !outside.equalsIgnoreCase(inside)) {
                     if (inside.compareToIgnoreCase(outside) < 0) {
-                        candidateItemsetsK.add(String.join(",", totalMinusLastInside, inside, outside));
+                        superSets.add(String.join(",", totalMinusLastInside, inside, outside));
                     } else {
-                        candidateItemsetsK.add(String.join(",", totalMinusLastInside, outside, inside));
+                        superSets.add(String.join(",", totalMinusLastInside, outside, inside));
                     }
                 }
-
             }
 
+            candidateItemsetsK.addAll(superSets);
+
+            if (isMaximalFrequent(superSets, k)) {
+                maximalItemsets.add(freqItemsetsPatternOutside);
+            }
+
+            if (isClosedFrequent(superSets, freqItemsetsPatternOutside, k)) {
+                closedItemsets.add(freqItemsetsPatternOutside);
+            }
         }
 
         return candidateItemsetsK;
     }
 
-    private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1, List<String> maximalItemsets, int k) {
+    private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1, List<String> maximalItemsets, List<String> closedItemsets, int k) {
 
         Set<String> candidatesItemsetsK = new HashSet<>();
         for (Set<String> itemset : freqItemsetsOfSizeK) {
@@ -181,6 +208,10 @@ public class Algorithm {
 
             if (isMaximalFrequent(superSets, k)) {
                 maximalItemsets.add(freqKItemsets);
+            }
+
+            if (isClosedFrequent(superSets, freqKItemsets, k)) {
+                closedItemsets.add(freqKItemsets);
             }
         }
 
