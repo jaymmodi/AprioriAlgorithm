@@ -28,7 +28,7 @@ public class Algorithm {
         System.out.println("************ k = " + k + " ****************");
         System.out.println("Candidates = " + this.allCandidatesWithId.size());
         List<String> freqItemsetsOfSizeOne = getFrequentItemsetsOfSize1(this.allCandidatesWithId.keySet(), k);
-        System.out.println("Frequent" + freqItemsetsOfSizeOne.size());
+        System.out.println("Frequent = " + freqItemsetsOfSizeOne.size());
 
         ++k;
         System.out.println("************ k = " + k + " ****************");
@@ -41,9 +41,9 @@ public class Algorithm {
 
         while (true) {
             ++k;
-            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne);
-
             System.out.println("************ k = " + k + " ****************");
+            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, k);
+
             System.out.println("Candidates = " + candidateItemsets.size());
 
             candidatePrune(candidateItemsets, k);
@@ -69,12 +69,22 @@ public class Algorithm {
         Set<String> size2 = new HashSet<>();
 
         for (String outerString : freqItemsetsOfSizeOne) {
-            size2.addAll(freqItemsetsOfSizeOne.stream()
+            List<String> superSets = freqItemsetsOfSizeOne.stream()
                     .filter(innerString -> outerString.compareToIgnoreCase(innerString) < 0)
                     .map(innerString -> String.join(",", outerString, innerString))
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toList());
+            size2.addAll(superSets);
+
+            if (isMaximalFrequent(superSets, 2)) {
+                System.out.println("Maximal = " + outerString);
+            }
         }
         return size2;
+    }
+
+    private boolean isMaximalFrequent(List<String> superSets, int k) {
+        return superSets.stream()
+                .allMatch(string -> getSupportCount(string, k) <= this.supportThreshold);
     }
 
     private void candidatePrune(Set<String> candidateItemsets, int k) {
@@ -101,16 +111,16 @@ public class Algorithm {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne) {
+    private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne, int k) {
 
         if (this.candidateGenerationType.equals("1")) {
-            return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne);
+            return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne, k);
         } else {
-            return candidateKIntoKMinus1(freqItemsets);
+            return candidateKIntoKMinus1(freqItemsets, k);
         }
     }
 
-    private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets) {
+    private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets, int k) {
         Set<String> candidateItemsetsK = new HashSet<>();
 
         for (Set<String> freqItemset : freqItemsets) {
@@ -148,7 +158,7 @@ public class Algorithm {
         return candidateItemsetsK;
     }
 
-    private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1) {
+    private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1, int k) {
 
         Set<String> candidatesItemsetsK = new HashSet<>();
         for (Set<String> itemset : freqItemsetsOfSizeK) {
@@ -157,17 +167,21 @@ public class Algorithm {
             String[] allValues = freqKItemsets.split(",");
             String lastString = allValues[allValues.length - 1];
 
-            freqItemsetsOfSize1.stream()
+            List<String> superSets = freqItemsetsOfSize1.stream()
                     .filter(freq1Itemset -> lastString.compareToIgnoreCase(freq1Itemset) < 0)
-                    .forEachOrdered(freq1Itemset -> {
-                        String candidate = String.join(",", freqKItemsets, freq1Itemset);
-                        candidatesItemsetsK.add(candidate);
-                    });
+                    .map(freq1Itemset -> String.join(",", freqKItemsets, freq1Itemset))
+                    .collect(Collectors.toList());
+
+            candidatesItemsetsK.addAll(superSets);
+
+            if (isMaximalFrequent(superSets, k)) {
+                System.out.println(itemset);
+            }
         }
 
         return candidatesItemsetsK;
     }
-    
+
     private List<Set<String>> getFrequentItemsets(Set<String> allCandidates, int k) {
 
         this.wordCount.clear();
