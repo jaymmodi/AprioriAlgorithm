@@ -24,25 +24,29 @@ public class Algorithm {
 
     public void run() {
 
+        int totalFrequentSize = 0;
         int k = 1;
+        List<String> maximalItemsets = new ArrayList<>();
         System.out.println("************ k = " + k + " ****************");
         System.out.println("Candidates = " + this.allCandidatesWithId.size());
         List<String> freqItemsetsOfSizeOne = getFrequentItemsetsOfSize1(this.allCandidatesWithId.keySet(), k);
         System.out.println("Frequent = " + freqItemsetsOfSizeOne.size());
+        totalFrequentSize += freqItemsetsOfSizeOne.size();
 
         ++k;
+        Set<String> candidatesItemsetsFor2 = getCandidateItemsetsForSize2(freqItemsetsOfSizeOne, maximalItemsets);
         System.out.println("************ k = " + k + " ****************");
-        Set<String> candidatesItemsetsFor2 = getCandidateItemsetsForSize2(freqItemsetsOfSizeOne);
         System.out.println("Candidates = " + candidatesItemsetsFor2.size());
         candidatePrune(candidatesItemsetsFor2, k);
         System.out.println("Candidates after pruning = " + candidatesItemsetsFor2.size());
         List<Set<String>> freqItemsetsHighK = getFrequentItemsets(candidatesItemsetsFor2, k);
-        System.out.println("Frequent = " + freqItemsetsHighK.size());
+        System.out.println("Frequent = " + (freqItemsetsHighK != null ? freqItemsetsHighK.size() : 0));
+        totalFrequentSize += freqItemsetsHighK.size();
 
         while (true) {
             ++k;
+            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, maximalItemsets, k);
             System.out.println("************ k = " + k + " ****************");
-            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, k);
 
             System.out.println("Candidates = " + candidateItemsets.size());
 
@@ -57,15 +61,16 @@ public class Algorithm {
             } else {
                 freqItemsetsHighK.clear();
                 freqItemsetsHighK.addAll(tempItemsets);
-                System.out.println("Frequent = " + freqItemsetsHighK.size());
+                totalFrequentSize += freqItemsetsHighK.size();
             }
         }
         System.out.println("********************************");
-        System.out.println("Actual Frequent Size = " + freqItemsetsHighK.size());
-        System.out.println(freqItemsetsHighK);
+        System.out.println("Total Maximal Frequent Itemsets = " + maximalItemsets.size());
+        System.out.println("Total Number of Frequent Itemsets = " + totalFrequentSize);
+        System.out.println("Actual Frequent Itemsets used for Rule Generation = " + freqItemsetsHighK.size());
     }
 
-    private Set<String> getCandidateItemsetsForSize2(List<String> freqItemsetsOfSizeOne) {
+    private Set<String> getCandidateItemsetsForSize2(List<String> freqItemsetsOfSizeOne, List<String> maximalItemsets) {
         Set<String> size2 = new HashSet<>();
 
         for (String outerString : freqItemsetsOfSizeOne) {
@@ -76,7 +81,7 @@ public class Algorithm {
             size2.addAll(superSets);
 
             if (isMaximalFrequent(superSets, 2)) {
-                System.out.println("Maximal = " + outerString);
+                maximalItemsets.add(outerString);
             }
         }
         return size2;
@@ -111,16 +116,16 @@ public class Algorithm {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne, int k) {
+    private Set<String> getCandidateItemsets(List<Set<String>> freqItemsets, List<String> freqItemsetsOfSizeOne, List<String> maximalItemsets, int k) {
 
         if (this.candidateGenerationType.equals("1")) {
-            return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne, k);
+            return candidateKInto1(freqItemsets, freqItemsetsOfSizeOne, maximalItemsets, k);
         } else {
-            return candidateKIntoKMinus1(freqItemsets, k);
+            return candidateKIntoKMinus1(freqItemsets, maximalItemsets, k);
         }
     }
 
-    private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets, int k) {
+    private Set<String> candidateKIntoKMinus1(List<Set<String>> freqItemsets, List<String> maximalItemsets, int k) {
         Set<String> candidateItemsetsK = new HashSet<>();
 
         for (Set<String> freqItemset : freqItemsets) {
@@ -158,7 +163,7 @@ public class Algorithm {
         return candidateItemsetsK;
     }
 
-    private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1, int k) {
+    private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1, List<String> maximalItemsets, int k) {
 
         Set<String> candidatesItemsetsK = new HashSet<>();
         for (Set<String> itemset : freqItemsetsOfSizeK) {
@@ -175,7 +180,7 @@ public class Algorithm {
             candidatesItemsetsK.addAll(superSets);
 
             if (isMaximalFrequent(superSets, k)) {
-                System.out.println(itemset);
+                maximalItemsets.add(freqKItemsets);
             }
         }
 
