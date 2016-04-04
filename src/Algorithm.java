@@ -11,8 +11,7 @@ public class Algorithm {
     private int supportThreshold;
     private HashMap<String, Integer> allCandidatesWithId;
     private String candidateGenerationType;
-    private HashMap<String, Integer> wordCount;
-    private HashMap<String, Integer> supportCount;
+    private HashMap<String, Integer> freqItemsetCount;
 
     public Algorithm(SparseMatrix sparseMatrix, String candidateGenerationType) {
         DataSet dataSet = sparseMatrix.dataSet;
@@ -20,7 +19,7 @@ public class Algorithm {
         this.supportThreshold = 100;
         this.allCandidatesWithId = dataSet.getDistinctItemsets();
         this.candidateGenerationType = candidateGenerationType;
-        this.wordCount = new HashMap<>();
+        this.freqItemsetCount = new HashMap<>();
     }
 
     public List<Set<String>> run() {
@@ -104,15 +103,6 @@ public class Algorithm {
         return superSets.stream()
                 .allMatch(string -> getSupportCount(string, k) <= this.supportThreshold);
     }
-
-//    private void candidatePrune(Set<String> candidateItemsets, List<String> freqItemsetsOfSizeOne, List<Set<String>> freqItemsets, int k) {
-//        Set<String> prunedCandidates = new HashSet<>();
-//
-//        if (freqItemsets == null) {
-//        }
-//
-//
-//    }
 
     private List<String> getFrequentItemsetsOfSize1(Set<String> allCandidates, int k) {
 
@@ -211,8 +201,6 @@ public class Algorithm {
 
     private List<Set<String>> getFrequentItemsets(Set<String> allCandidates, int k) {
 
-        this.wordCount.clear();
-
         if (!allCandidates.isEmpty()) {
             Function<String, Set<String>> convertToSet = string -> {
                 Set<String> sortedSet = new TreeSet<>();
@@ -243,23 +231,24 @@ public class Algorithm {
             for (String itemset : individualItemsets) {
                 if (transaction.contains(this.allCandidatesWithId.get(itemset))) {
                     internalCount++;
-                    addToWordCountMap(itemset, 1);
                 }
             }
             if (internalCount == k) {
                 count++;
             }
         }
-
+        if (count > this.supportThreshold) {
+            addToWordCountMap(pattern, count);
+        }
         return count;
     }
 
     private void addToWordCountMap(String string, int count) {
-        if (this.wordCount.containsKey(string)) {
-            int prevCount = this.wordCount.get(string);
-            this.wordCount.put(string, prevCount + count);
+        if (this.freqItemsetCount.containsKey(string)) {
+            int prevCount = this.freqItemsetCount.get(string);
+            this.freqItemsetCount.put(string, prevCount + count);
         } else {
-            this.wordCount.put(string, count);
+            this.freqItemsetCount.put(string, count);
         }
     }
 }
