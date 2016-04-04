@@ -6,6 +6,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * Created by jay on 3/28/16.
@@ -26,8 +28,17 @@ public class Driver {
         Algorithm algorithm = new Algorithm(sparseMatrix, candidateTypeGeneration);
         List<Set<String>> frequentItemsets = algorithm.run();
 
-        GenerateRule generateRule = new GenerateRule(frequentItemsets);
+        GenerateRule generateRule = new GenerateRule(frequentItemsets, algorithm.getFreqItemsetCount());
         System.out.println("Total Rules = " + generateRule.getAllRules().size());
+
+        List<Rule> allRules = generateRule.getAllRules();
+
+        for (Rule allRule : allRules) {
+            System.out.println(allRule.getSource() + " -> " + allRule.getEnd());
+        }
+
+        System.out.println(allRules.stream().filter(rule -> rule.getEnd().split(",").length ==1).collect(Collectors.toList()).size());
+
     }
 
     private static String getCandidateGenerationType() {

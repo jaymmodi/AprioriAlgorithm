@@ -16,10 +16,14 @@ public class Algorithm {
     public Algorithm(SparseMatrix sparseMatrix, String candidateGenerationType) {
         DataSet dataSet = sparseMatrix.dataSet;
         this.sparseMap = sparseMatrix.getIdVsIsPresentMap();
-        this.supportThreshold = 100;
+        this.supportThreshold = 172;
         this.allCandidatesWithId = dataSet.getDistinctItemsets();
         this.candidateGenerationType = candidateGenerationType;
         this.freqItemsetCount = new HashMap<>();
+    }
+
+    public HashMap<String, Integer> getFreqItemsetCount() {
+        return freqItemsetCount;
     }
 
     public List<Set<String>> run() {
@@ -28,6 +32,7 @@ public class Algorithm {
         int k = 1;
         List<String> maximalItemsets = new ArrayList<>();
         List<String> closedItemsets = new ArrayList<>();
+        List<Set<String>> allItemsets = new ArrayList<>();
 
         System.out.println("************ k = " + k + " ****************");
         System.out.println("Candidates = " + this.allCandidatesWithId.size());
@@ -42,6 +47,7 @@ public class Algorithm {
         List<Set<String>> freqItemsetsHighK = getFrequentItemsets(candidatesItemsetsFor2, k);
         System.out.println("Frequent = " + (freqItemsetsHighK != null ? freqItemsetsHighK.size() : 0));
         totalFrequentSize += freqItemsetsHighK.size();
+        allItemsets.addAll(freqItemsetsHighK);
 
         while (true) {
             ++k;
@@ -59,6 +65,7 @@ public class Algorithm {
                 freqItemsetsHighK.addAll(tempItemsets);
                 System.out.println("Frequent = " + freqItemsetsHighK.size());
                 totalFrequentSize += freqItemsetsHighK.size();
+                allItemsets.addAll(freqItemsetsHighK);
             }
         }
         System.out.println("********************************");
@@ -66,9 +73,8 @@ public class Algorithm {
         System.out.println("Total Closed Frequent Itemsets = " + closedItemsets.size());
         System.out.println("Total Number of Frequent Itemsets = " + totalFrequentSize);
         System.out.println("Actual Frequent Itemsets used for Rule Generation = " + freqItemsetsHighK.size());
-        System.out.println(freqItemsetsHighK);
 
-        return freqItemsetsHighK;
+        return allItemsets;
     }
 
     private Set<String> getCandidateItemsetsForSize2(List<String> freqItemsetsOfSizeOne, List<String> maximalItemsets, List<String> closedItemsets) {
@@ -219,6 +225,10 @@ public class Algorithm {
     }
 
     public int getSupportCount(String pattern, int k) {
+        if (this.freqItemsetCount.containsKey(pattern)) {
+            return this.freqItemsetCount.get(pattern);
+        }
+
         String[] individualItemsets = pattern.split(",");
         int count = 0;
         int internalCount;
@@ -244,11 +254,6 @@ public class Algorithm {
     }
 
     private void addToWordCountMap(String string, int count) {
-        if (this.freqItemsetCount.containsKey(string)) {
-            int prevCount = this.freqItemsetCount.get(string);
-            this.freqItemsetCount.put(string, prevCount + count);
-        } else {
-            this.freqItemsetCount.put(string, count);
-        }
+        this.freqItemsetCount.put(string, count);
     }
 }
