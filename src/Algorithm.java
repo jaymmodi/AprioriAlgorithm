@@ -12,6 +12,7 @@ public class Algorithm {
     private HashMap<String, Integer> allCandidatesWithId;
     private String candidateGenerationType;
     private HashMap<String, Integer> wordCount;
+    private HashMap<String, Integer> supportCount;
 
     public Algorithm(SparseMatrix sparseMatrix, String candidateGenerationType) {
         DataSet dataSet = sparseMatrix.dataSet;
@@ -39,8 +40,6 @@ public class Algorithm {
         Set<String> candidatesItemsetsFor2 = getCandidateItemsetsForSize2(freqItemsetsOfSizeOne, maximalItemsets, closedItemsets);
         System.out.println("************ k = " + k + " ****************");
         System.out.println("Candidates = " + candidatesItemsetsFor2.size());
-        candidatePrune(candidatesItemsetsFor2, k);
-        System.out.println("Candidates after pruning = " + candidatesItemsetsFor2.size());
         List<Set<String>> freqItemsetsHighK = getFrequentItemsets(candidatesItemsetsFor2, k);
         System.out.println("Frequent = " + (freqItemsetsHighK != null ? freqItemsetsHighK.size() : 0));
         totalFrequentSize += freqItemsetsHighK.size();
@@ -51,10 +50,6 @@ public class Algorithm {
             System.out.println("************ k = " + k + " ****************");
 
             System.out.println("Candidates = " + candidateItemsets.size());
-
-            candidatePrune(candidateItemsets, k);
-            System.out.println("Candidates after pruning= " + candidateItemsets.size());
-
 
             List<Set<String>> tempItemsets = getFrequentItemsets(candidateItemsets, k);
 
@@ -110,21 +105,14 @@ public class Algorithm {
                 .allMatch(string -> getSupportCount(string, k) <= this.supportThreshold);
     }
 
-    private void candidatePrune(Set<String> candidateItemsets, int k) {
-        Set<String> prunedCandidates = new HashSet<>();
-        for (String pattern : candidateItemsets) {
-            String[] candidates = pattern.split(",");
-
-            boolean allMaTch = Arrays.stream(candidates)
-                    .allMatch(candidate -> this.wordCount.get(candidate) > k - 1);
-            if (allMaTch) {
-                prunedCandidates.add(pattern);
-            }
-
-        }
-        candidateItemsets.clear();
-        candidateItemsets.addAll(prunedCandidates);
-    }
+//    private void candidatePrune(Set<String> candidateItemsets, List<String> freqItemsetsOfSizeOne, List<Set<String>> freqItemsets, int k) {
+//        Set<String> prunedCandidates = new HashSet<>();
+//
+//        if (freqItemsets == null) {
+//        }
+//
+//
+//    }
 
     private List<String> getFrequentItemsetsOfSize1(Set<String> allCandidates, int k) {
 
