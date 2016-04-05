@@ -74,38 +74,74 @@ public class Algorithm {
         System.out.println("Total Number of Frequent Itemsets = " + totalFrequentSize);
         System.out.println("Actual Frequent Itemsets used for Rule Generation = " + freqItemsetsHighK.size());
 
+        System.out.println("*************** Maximal **************");
+        maximalItemsets.stream().forEach(System.out::println);
+
+        System.out.println("*************** Closed **************");
+        closedItemsets.stream().forEach(System.out::println);
+
         return allItemsets;
     }
 
     private Set<String> getCandidateItemsetsForSize2(List<String> freqItemsetsOfSizeOne, List<String> maximalItemsets, List<String> closedItemsets) {
         Set<String> size2 = new HashSet<>();
+        TreeSet<String> sortTree = new TreeSet<>();
+        List<String> allSuperSets = new ArrayList<>();
+
+//        maximalItemsets.clear();
+//        closedItemsets.clear();
 
         for (String outerString : freqItemsetsOfSizeOne) {
+            allSuperSets.clear();
             List<String> superSets = freqItemsetsOfSizeOne.stream()
                     .filter(innerString -> outerString.compareToIgnoreCase(innerString) < 0)
                     .map(innerString -> String.join(",", outerString, innerString))
                     .collect(Collectors.toList());
             size2.addAll(superSets);
 
-            if (isMaximalFrequent(superSets, 2)) {
+            allSuperSets.addAll(getAllSubsets(outerString, sortTree, this.allCandidatesWithId.keySet()));
+
+            if (isMaximalFrequent(allSuperSets, 2)) {
                 maximalItemsets.add(outerString);
             }
 
-            if (isClosedFrequent(superSets, outerString, 2)) {
+            if (isClosedFrequent(allSuperSets, outerString, 2)) {
                 closedItemsets.add(outerString);
             }
+
         }
         return size2;
     }
 
+    private List<String> getAllSubsets(String outerString, TreeSet<String> sortTree, Set<String> allKeys) {
+        List<String> allSubSets = new ArrayList<>();
+        sortTree.clear();
+
+        List<String> allStrings = Arrays.asList(outerString.split(","));
+        sortTree.addAll(allStrings);
+
+        allKeys.stream().filter(allKey -> !allStrings.contains(allKey)).forEach(allKey -> {
+            sortTree.add(allKey);
+            String joinedString = String.join(",", sortTree);
+            allSubSets.add(joinedString);
+            sortTree.remove(allKey);
+        });
+
+        return allSubSets;
+    }
+
     private boolean isClosedFrequent(List<String> superSets, String itemset, int k) {
+
         int supportCount = getSupportCount(itemset, k - 1);
 
-        return superSets.stream()
-                .allMatch(string -> getSupportCount(string, k) < supportCount);
+        boolean closed = superSets.stream()
+                .allMatch(string -> getSupportCount(string, k) != supportCount);
+
+        return closed && (supportCount > this.supportThreshold);
     }
 
     private boolean isMaximalFrequent(List<String> superSets, int k) {
+
         return superSets.stream()
                 .allMatch(string -> getSupportCount(string, k) <= this.supportThreshold);
     }
@@ -131,6 +167,9 @@ public class Algorithm {
         Set<String> candidateItemsetsK = new HashSet<>();
         List<String> superSets = new ArrayList<>();
 
+        TreeSet<String> sortTree = new TreeSet<>();
+        List<String> allSuperSets = new ArrayList<>();
+
         for (Set<String> freqItemset : freqItemsets) {
 
             String freqItemsetsPatternOutside = String.join(",", freqItemset);
@@ -144,6 +183,7 @@ public class Algorithm {
             superSets.clear();
 
             for (Set<String> itemset : freqItemsets) {
+                allSuperSets.clear();
 
                 String freqItemsetsPatternInside = String.join(",", itemset);
                 String[] allCandidatesInside = freqItemsetsPatternInside.split(",");
@@ -164,12 +204,13 @@ public class Algorithm {
             }
 
             candidateItemsetsK.addAll(superSets);
+            allSuperSets.addAll(getAllSubsets(freqItemsetsPatternOutside, sortTree, this.allCandidatesWithId.keySet()));
 
-            if (isMaximalFrequent(superSets, k)) {
+            if (isMaximalFrequent(allSuperSets, k)) {
                 maximalItemsets.add(freqItemsetsPatternOutside);
             }
 
-            if (isClosedFrequent(superSets, freqItemsetsPatternOutside, k)) {
+            if (isClosedFrequent(allSuperSets, freqItemsetsPatternOutside, k)) {
                 closedItemsets.add(freqItemsetsPatternOutside);
             }
         }
@@ -180,7 +221,11 @@ public class Algorithm {
     private Set<String> candidateKInto1(List<Set<String>> freqItemsetsOfSizeK, List<String> freqItemsetsOfSize1, List<String> maximalItemsets, List<String> closedItemsets, int k) {
 
         Set<String> candidatesItemsetsK = new HashSet<>();
+        TreeSet<String> sortTree = new TreeSet<>();
+        List<String> allSuperSets = new ArrayList<>();
+
         for (Set<String> itemset : freqItemsetsOfSizeK) {
+            allSuperSets.clear();
 
             String freqKItemsets = String.join(",", itemset);
             String[] allValues = freqKItemsets.split(",");
@@ -193,11 +238,13 @@ public class Algorithm {
 
             candidatesItemsetsK.addAll(superSets);
 
-            if (isMaximalFrequent(superSets, k)) {
+            allSuperSets.addAll(getAllSubsets(freqKItemsets, sortTree, this.allCandidatesWithId.keySet()));
+
+            if (isMaximalFrequent(allSuperSets, k)) {
                 maximalItemsets.add(freqKItemsets);
             }
 
-            if (isClosedFrequent(superSets, freqKItemsets, k)) {
+            if (isClosedFrequent(allSuperSets, freqKItemsets, k)) {
                 closedItemsets.add(freqKItemsets);
             }
         }
@@ -256,4 +303,6 @@ public class Algorithm {
     private void addToWordCountMap(String string, int count) {
         this.freqItemsetCount.put(string, count);
     }
+
+
 }
