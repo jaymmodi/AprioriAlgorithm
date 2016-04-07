@@ -6,7 +6,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -25,20 +24,89 @@ public class Driver {
         sparseMatrix.makeMatrix();
 
         String candidateTypeGeneration = getCandidateGenerationType();
-        Algorithm algorithm = new Algorithm(sparseMatrix, candidateTypeGeneration);
+        String ruleEvaluation = "1";
+
+        Algorithm algorithm = new Algorithm(sparseMatrix, candidateTypeGeneration,dataSet.getSupportThreshold());
         List<Set<String>> frequentItemsets = algorithm.run();
 
-        GenerateRule generateRule = new GenerateRule(frequentItemsets, algorithm.getFreqItemsetCount());
-        System.out.println("Total Rules = " + generateRule.getAllRules().size());
+        GenerateRule generateRule = new GenerateRule(frequentItemsets, algorithm.getFreqItemsetCount(),dataSet.getConfidenceThreshold());
 
+        System.out.println("********************* Rules ******************** ");
         List<Rule> allRules = generateRule.getAllRules();
+        System.out.println("Total Rules = " + allRules.size());
 
-        for (Rule allRule : allRules) {
-            System.out.println(allRule.getSource() + " -> " + allRule.getEnd());
+        allRules.stream().filter(allRule -> allRule.getConfidence() == 1.0).forEach(allRule -> {
+            System.out.println(allRule.getSource() + " -> " + allRule.getEnd() + "...." + allRule.getConfidence());
+        });
+
+//        printTopRules(allRules, ruleEvaluation);
+    }
+
+    private static void printTopRules(List<Rule> allRules, String ruleEvaluation) {
+        Comparator<Rule> confidenceComparator = (r1, r2) -> {
+
+            if (r1.getConfidence() > r2.getConfidence()) {
+                return -1;
+            } else if (r1.getConfidence() < r2.getConfidence()) {
+                return 1;
+            } else {
+                return 0;
+            }
+        };
+
+        Comparator<Rule> liftComparator = (r1, r2) -> {
+
+            if (r1.getLift() > r2.getLift()) {
+                return 1;
+            } else if (r1.getLift() < r2.getLift()) {
+                return -1;
+            } else {
+                return 0;
+            }
+        };
+
+        List<Rule> print = new ArrayList<>();
+
+        if (ruleEvaluation.equalsIgnoreCase("1")) {
+            print.addAll(allRules.stream()
+                    .sorted(confidenceComparator)
+                    .limit(10)
+                    .collect(Collectors.toList()));
+
+        } else if (ruleEvaluation.equalsIgnoreCase("2")) {
+            print.addAll(allRules.stream()
+                    .sorted(liftComparator)
+                    .limit(10)
+                    .collect(Collectors.toList()));
         }
 
-        System.out.println(allRules.stream().filter(rule -> rule.getEnd().split(",").length ==1).collect(Collectors.toList()).size());
+        for (Rule rule : print) {
+            System.out.println(rule.getSource() + " -> " + rule.getEnd() + "....." + rule.getConfidence());
+        }
+    }
 
+    private static String getRuleEvaluation() {
+        System.out.println("Please a method to evaluate rules");
+        System.out.println("1. Confidence  2. Lift");
+        String line = null;
+
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in))) {
+            line = bufferedReader.readLine();
+
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (line.equals("1") || line.equalsIgnoreCase("Confidence")) {
+            return "1";
+        } else if (line.equals("2") || line.equalsIgnoreCase("Lift")) {
+            return "2";
+        } else {
+            System.out.println("Please provide correct input in your next attempt");
+            System.exit(1);
+        }
+        return line;
     }
 
     private static String getCandidateGenerationType() {
@@ -71,6 +139,7 @@ public class Driver {
             String line;
 
             while ((line = bufferedReader.readLine()) != null) {
+                line = line.toLowerCase();
                 String[] values = line.split(",");
                 dataSet.getInstances().add(line);
                 findDistinctValuesPerColumn(values, dataSet);
@@ -122,6 +191,9 @@ public class Driver {
             dataSet.setAttributeNames(Arrays.asList(bufferedReader.readLine().split(",")));
 
             dataSet.setAttributeTypes(Arrays.asList(bufferedReader.readLine().split(",")));
+
+            dataSet.setSupportThreshold(Double.parseDouble(bufferedReader.readLine()));
+            dataSet.setConfidenceThreshold(Double.parseDouble(bufferedReader.readLine()));
 
             bufferedReader.close();
 

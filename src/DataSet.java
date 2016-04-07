@@ -12,6 +12,8 @@ public class DataSet {
     private HashMap<String, Set<String>> distinctValuesPerColumn;
     private String pathToFile;
     private List<String> instances;
+    private Double confidenceThreshold;
+    private Double supportThreshold;
 
     public DataSet() {
         this.distinctValuesPerColumn = new HashMap<>();
@@ -19,6 +21,21 @@ public class DataSet {
         this.instances = new ArrayList<>();
     }
 
+    public Double getConfidenceThreshold() {
+        return confidenceThreshold;
+    }
+
+    public void setConfidenceThreshold(Double confidenceThreshold) {
+        this.confidenceThreshold = confidenceThreshold;
+    }
+
+    public Double getSupportThreshold() {
+        return supportThreshold;
+    }
+
+    public void setSupportThreshold(Double supportThreshold) {
+        this.supportThreshold = supportThreshold;
+    }
 
     public List<String> getInstances() {
         return instances;
@@ -99,4 +116,6 @@ public class DataSet {
     public int size() {
         return this.instances.size();
     }
+
+
 }

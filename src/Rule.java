@@ -1,7 +1,9 @@
+import java.util.Comparator;
+
 /**
  * Created by jay on 4/3/16.
  */
-public class Rule {
+public class Rule{
 
     private String source;
     private String end;
@@ -55,5 +57,9 @@ public class Rule {
 
     public String itemset() {
         return source + "," + end;
+    }
+
+    public double getLift() {
+        return getConfidence() / this.endCount;
     }
 }

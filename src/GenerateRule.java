@@ -9,10 +9,10 @@ public class GenerateRule {
     private double confidenceThreshold;
     private HashMap<String, Integer> freqItemsetCount;
 
-    public GenerateRule(List<Set<String>> frequentItemsets, HashMap<String, Integer> freqItemsetCount) {
+    public GenerateRule(List<Set<String>> frequentItemsets, HashMap<String, Integer> freqItemsetCount, double confidenceThreshold) {
         this.frequentItemsets = frequentItemsets;
         this.freqItemsetCount = freqItemsetCount;
-        this.confidenceThreshold = 0.6;
+        this.confidenceThreshold = confidenceThreshold;
     }
 
     public List<Rule> getAllRules() {
@@ -28,11 +28,11 @@ public class GenerateRule {
                 List<Rule> highConfRules = generateMoreRules(highConfRulesWithOneConsequent, itemsetsWithComma);
                 rulesList.addAll(highConfRules);
             }
-
         }
 
         return rulesList;
     }
+
 
     private List<Rule> generateMoreRules(List<Rule> highConfRules, String itemsetsWithComma) {
 
@@ -55,7 +55,8 @@ public class GenerateRule {
             rule.setEndCount(this.freqItemsetCount.get(consequent));
 
             String source = allValuesSet.stream()
-                    .filter(s -> !consequent.contains(s))
+                    .filter(s -> !consequentSet.contains(s))
+                    .sorted()
                     .collect(Collectors.joining(","));
 
             rule.setSource(source);

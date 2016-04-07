@@ -8,15 +8,15 @@ import java.util.stream.Collectors;
 public class Algorithm {
 
     private HashMap<Integer, List<Integer>> sparseMap;
-    private int supportThreshold;
+    private double supportThreshold;
     private HashMap<String, Integer> allCandidatesWithId;
     private String candidateGenerationType;
     private HashMap<String, Integer> freqItemsetCount;
 
-    public Algorithm(SparseMatrix sparseMatrix, String candidateGenerationType) {
+    public Algorithm(SparseMatrix sparseMatrix, String candidateGenerationType, double supportThreshold) {
         DataSet dataSet = sparseMatrix.dataSet;
         this.sparseMap = sparseMatrix.getIdVsIsPresentMap();
-        this.supportThreshold = 172;
+        this.supportThreshold = supportThreshold;
         this.allCandidatesWithId = dataSet.getDistinctItemsets();
         this.candidateGenerationType = candidateGenerationType;
         this.freqItemsetCount = new HashMap<>();
@@ -74,12 +74,6 @@ public class Algorithm {
         System.out.println("Total Number of Frequent Itemsets = " + totalFrequentSize);
         System.out.println("Actual Frequent Itemsets used for Rule Generation = " + freqItemsetsHighK.size());
 
-        System.out.println("*************** Maximal **************");
-        maximalItemsets.stream().forEach(System.out::println);
-
-        System.out.println("*************** Closed **************");
-        closedItemsets.stream().forEach(System.out::println);
-
         return allItemsets;
     }
 
@@ -87,9 +81,6 @@ public class Algorithm {
         Set<String> size2 = new HashSet<>();
         TreeSet<String> sortTree = new TreeSet<>();
         List<String> allSuperSets = new ArrayList<>();
-
-//        maximalItemsets.clear();
-//        closedItemsets.clear();
 
         for (String outerString : freqItemsetsOfSizeOne) {
             allSuperSets.clear();
@@ -137,20 +128,20 @@ public class Algorithm {
         boolean closed = superSets.stream()
                 .allMatch(string -> getSupportCount(string, k) != supportCount);
 
-        return closed && (supportCount > this.supportThreshold);
+        return closed && (supportCount >= this.supportThreshold * this.sparseMap.size());
     }
 
     private boolean isMaximalFrequent(List<String> superSets, int k) {
 
         return superSets.stream()
-                .allMatch(string -> getSupportCount(string, k) <= this.supportThreshold);
+                .allMatch(string -> getSupportCount(string, k) <= this.supportThreshold * this.sparseMap.size());
     }
 
     private List<String> getFrequentItemsetsOfSize1(Set<String> allCandidates, int k) {
 
         return allCandidates.
                 stream()
-                .filter(string -> getSupportCount(string, k) > this.supportThreshold)
+                .filter(string -> getSupportCount(string, k) >= this.supportThreshold * this.sparseMap.size())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -263,7 +254,7 @@ public class Algorithm {
 
             return allCandidates.
                     stream()
-                    .filter(string -> getSupportCount(string, k) > this.supportThreshold)
+                    .filter(string -> getSupportCount(string, k) >= this.supportThreshold * this.sparseMap.size())
                     .map(convertToSet)
                     .collect(Collectors.toCollection(ArrayList::new));
         } else {
@@ -294,7 +285,7 @@ public class Algorithm {
                 count++;
             }
         }
-        if (count > this.supportThreshold) {
+        if (count >= this.supportThreshold * this.sparseMap.size()) {
             addToWordCountMap(pattern, count);
         }
         return count;
