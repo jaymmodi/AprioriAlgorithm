@@ -42,7 +42,7 @@ public class GenerateRule {
                 rulesList.addAll(getAllLiftRules(itemsetsWithComma));
             } else {
                 List<Rule> highConfRulesWithOneConsequent = getHighConfidenceRulesOfOneConsequent(itemsetsWithComma);
-                rulesList.addAll(highConfRulesWithOneConsequent);
+//                rulesList.addAll(highConfRulesWithOneConsequent);
 //                this.pruningCount += highConfRulesWithOneConsequent.size();
 
 

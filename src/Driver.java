@@ -43,7 +43,8 @@ public class Driver {
             printTopRules(allRules, "1", sparseMatrix.getIdVsIsPresentMap().size());
         }
 
-//        allRules.stream().forEach(rule -> System.out.println(rule.getSource() + "-> \t" + rule.getEnd() + "\t" + rule.getLift() * sparseMatrix.getIdVsIsPresentMap().size()));
+//        allRules.stream().forEach(rule -> System.out.println(rule.getSource() + " " + rule.getEnd()));
+
     }
 
     private static void printTopRules(List<Rule> allRules, String ruleEvaluation, int size) {
@@ -78,7 +79,7 @@ public class Driver {
                     .collect(Collectors.toList()));
 
             for (Rule rule : print) {
-                System.out.println(rule.getSource() + " -> " + rule.getEnd() + "....." + rule.getConfidence());
+                System.out.println(rule.getSource() + " \t\t\t -> \t\t\t" + rule.getEnd());
             }
 
         } else if (ruleEvaluation.equalsIgnoreCase("2")) {
@@ -88,7 +89,7 @@ public class Driver {
                     .collect(Collectors.toList()));
 
             for (Rule rule : print) {
-                System.out.println(rule.getSource() + " -> " + rule.getEnd() + "....." + rule.getLift() * size);
+                System.out.println(rule.getSource() + " \t\t\t -> \t\t\t" + rule.getEnd());
             }
         }
 
