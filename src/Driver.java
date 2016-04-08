@@ -24,25 +24,29 @@ public class Driver {
         sparseMatrix.makeMatrix();
 
         String candidateTypeGeneration = getCandidateGenerationType();
-        String ruleEvaluation = "1";
 
-        Algorithm algorithm = new Algorithm(sparseMatrix, candidateTypeGeneration,dataSet.getSupportThreshold());
+        Algorithm algorithm = new Algorithm(sparseMatrix, candidateTypeGeneration, dataSet.getSupportThreshold());
         List<Set<String>> frequentItemsets = algorithm.run();
 
-        GenerateRule generateRule = new GenerateRule(frequentItemsets, algorithm.getFreqItemsetCount(),dataSet.getConfidenceThreshold());
+        GenerateRule generateRule = new GenerateRule(frequentItemsets, algorithm.getFreqItemsetCount(), dataSet.getConfidenceThreshold(), dataSet.getRuleEvaluation());
 
         System.out.println("********************* Rules ******************** ");
         List<Rule> allRules = generateRule.getAllRules();
         System.out.println("Total Rules = " + allRules.size());
+        System.out.println("Brute Force Count = " + generateRule.getBruteForceCount());
+        System.out.println("Prune Count= " + generateRule.getPruningCount());
+        System.out.println("savings = " + generateRule.getSavings() + " % ");
 
-        allRules.stream().filter(allRule -> allRule.getConfidence() == 1.0).forEach(allRule -> {
-            System.out.println(allRule.getSource() + " -> " + allRule.getEnd() + "...." + allRule.getConfidence());
-        });
+        if (dataSet.getRuleEvaluation().equals("Lift")) {
+            printTopRules(allRules, "2", sparseMatrix.getIdVsIsPresentMap().size());
+        } else {
+            printTopRules(allRules, "1", sparseMatrix.getIdVsIsPresentMap().size());
+        }
 
-//        printTopRules(allRules, ruleEvaluation);
+//        allRules.stream().forEach(rule -> System.out.println(rule.getSource() + "-> \t" + rule.getEnd() + "\t" + rule.getLift() * sparseMatrix.getIdVsIsPresentMap().size()));
     }
 
-    private static void printTopRules(List<Rule> allRules, String ruleEvaluation) {
+    private static void printTopRules(List<Rule> allRules, String ruleEvaluation, int size) {
         Comparator<Rule> confidenceComparator = (r1, r2) -> {
 
             if (r1.getConfidence() > r2.getConfidence()) {
@@ -56,10 +60,10 @@ public class Driver {
 
         Comparator<Rule> liftComparator = (r1, r2) -> {
 
-            if (r1.getLift() > r2.getLift()) {
-                return 1;
-            } else if (r1.getLift() < r2.getLift()) {
+            if (r1.getLift() * size > r2.getLift() * size) {
                 return -1;
+            } else if (r1.getLift() * size < r2.getLift() * size) {
+                return 1;
             } else {
                 return 0;
             }
@@ -73,40 +77,21 @@ public class Driver {
                     .limit(10)
                     .collect(Collectors.toList()));
 
+            for (Rule rule : print) {
+                System.out.println(rule.getSource() + " -> " + rule.getEnd() + "....." + rule.getConfidence());
+            }
+
         } else if (ruleEvaluation.equalsIgnoreCase("2")) {
             print.addAll(allRules.stream()
                     .sorted(liftComparator)
                     .limit(10)
                     .collect(Collectors.toList()));
+
+            for (Rule rule : print) {
+                System.out.println(rule.getSource() + " -> " + rule.getEnd() + "....." + rule.getLift() * size);
+            }
         }
 
-        for (Rule rule : print) {
-            System.out.println(rule.getSource() + " -> " + rule.getEnd() + "....." + rule.getConfidence());
-        }
-    }
-
-    private static String getRuleEvaluation() {
-        System.out.println("Please a method to evaluate rules");
-        System.out.println("1. Confidence  2. Lift");
-        String line = null;
-
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in))) {
-            line = bufferedReader.readLine();
-
-            bufferedReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (line.equals("1") || line.equalsIgnoreCase("Confidence")) {
-            return "1";
-        } else if (line.equals("2") || line.equalsIgnoreCase("Lift")) {
-            return "2";
-        } else {
-            System.out.println("Please provide correct input in your next attempt");
-            System.exit(1);
-        }
-        return line;
     }
 
     private static String getCandidateGenerationType() {
@@ -194,6 +179,7 @@ public class Driver {
 
             dataSet.setSupportThreshold(Double.parseDouble(bufferedReader.readLine()));
             dataSet.setConfidenceThreshold(Double.parseDouble(bufferedReader.readLine()));
+            dataSet.setRuleEvaluation(bufferedReader.readLine());
 
             bufferedReader.close();
 

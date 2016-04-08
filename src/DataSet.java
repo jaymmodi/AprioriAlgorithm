@@ -14,6 +14,7 @@ public class DataSet {
     private List<String> instances;
     private Double confidenceThreshold;
     private Double supportThreshold;
+    private String ruleEvaluation;
 
     public DataSet() {
         this.distinctValuesPerColumn = new HashMap<>();
@@ -117,5 +118,11 @@ public class DataSet {
         return this.instances.size();
     }
 
+    public String getRuleEvaluation() {
+        return ruleEvaluation;
+    }
 
+    public void setRuleEvaluation(String ruleEvaluation) {
+        this.ruleEvaluation = ruleEvaluation;
+    }
 }

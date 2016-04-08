@@ -30,12 +30,15 @@ public class Algorithm {
 
         int totalFrequentSize = 0;
         int k = 1;
+        int totalCandidateSize = 0;
+
         List<String> maximalItemsets = new ArrayList<>();
         List<String> closedItemsets = new ArrayList<>();
         List<Set<String>> allItemsets = new ArrayList<>();
 
         System.out.println("************ k = " + k + " ****************");
         System.out.println("Candidates = " + this.allCandidatesWithId.size());
+        totalCandidateSize += this.allCandidatesWithId.size();
         List<String> freqItemsetsOfSizeOne = getFrequentItemsetsOfSize1(this.allCandidatesWithId.keySet(), k);
         System.out.println("Frequent = " + freqItemsetsOfSizeOne.size());
         totalFrequentSize += freqItemsetsOfSizeOne.size();
@@ -44,35 +47,41 @@ public class Algorithm {
         Set<String> candidatesItemsetsFor2 = getCandidateItemsetsForSize2(freqItemsetsOfSizeOne, maximalItemsets, closedItemsets);
         System.out.println("************ k = " + k + " ****************");
         System.out.println("Candidates = " + candidatesItemsetsFor2.size());
+        totalCandidateSize += candidatesItemsetsFor2.size();
         List<Set<String>> freqItemsetsHighK = getFrequentItemsets(candidatesItemsetsFor2, k);
-        System.out.println("Frequent = " + (freqItemsetsHighK != null ? freqItemsetsHighK.size() : 0));
-        totalFrequentSize += freqItemsetsHighK.size();
-        allItemsets.addAll(freqItemsetsHighK);
 
-        while (true) {
-            ++k;
-            Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, maximalItemsets, closedItemsets, k);
-            System.out.println("************ k = " + k + " ****************");
+        if (freqItemsetsHighK != null) {
+            System.out.println("Frequent = " + freqItemsetsHighK.size());
+            totalFrequentSize += freqItemsetsHighK.size();
+            allItemsets.addAll(freqItemsetsHighK);
 
-            System.out.println("Candidates = " + candidateItemsets.size());
+            while (true) {
+                ++k;
+                Set<String> candidateItemsets = getCandidateItemsets(freqItemsetsHighK, freqItemsetsOfSizeOne, maximalItemsets, closedItemsets, k);
+                System.out.println("************ k = " + k + " ****************");
 
-            List<Set<String>> tempItemsets = getFrequentItemsets(candidateItemsets, k);
+                System.out.println("Candidates = " + candidateItemsets.size());
+                totalCandidateSize += candidateItemsets.size();
 
-            if (tempItemsets == null || tempItemsets.size() == 0) {
-                break;
-            } else {
-                freqItemsetsHighK.clear();
-                freqItemsetsHighK.addAll(tempItemsets);
-                System.out.println("Frequent = " + freqItemsetsHighK.size());
-                totalFrequentSize += freqItemsetsHighK.size();
-                allItemsets.addAll(freqItemsetsHighK);
+                List<Set<String>> tempItemsets = getFrequentItemsets(candidateItemsets, k);
+
+                if (tempItemsets == null || tempItemsets.size() == 0) {
+                    break;
+                } else {
+                    freqItemsetsHighK.clear();
+                    freqItemsetsHighK.addAll(tempItemsets);
+                    System.out.println("Frequent = " + freqItemsetsHighK.size());
+                    totalFrequentSize += freqItemsetsHighK.size();
+                    allItemsets.addAll(freqItemsetsHighK);
+                }
             }
         }
         System.out.println("********************************");
         System.out.println("Total Maximal Frequent Itemsets = " + maximalItemsets.size());
         System.out.println("Total Closed Frequent Itemsets = " + closedItemsets.size());
         System.out.println("Total Number of Frequent Itemsets = " + totalFrequentSize);
-        System.out.println("Actual Frequent Itemsets used for Rule Generation = " + freqItemsetsHighK.size());
+        System.out.println("Total candidate set considered = " + totalCandidateSize);
+//        System.out.println("Actual Frequent Itemsets used for Rule Generation = " + freqItemsetsHighK.size());
 
         return allItemsets;
     }
