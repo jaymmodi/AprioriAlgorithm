@@ -42,11 +42,12 @@ public class GenerateRule {
                 rulesList.addAll(getAllLiftRules(itemsetsWithComma));
             } else {
                 List<Rule> highConfRulesWithOneConsequent = getHighConfidenceRulesOfOneConsequent(itemsetsWithComma);
-//                rulesList.addAll(highConfRulesWithOneConsequent);
-//                this.pruningCount += highConfRulesWithOneConsequent.size();
+                int length = itemsetsWithComma.split(",").length;
+                this.pruningCount += length;
 
-
-                if (highConfRulesWithOneConsequent.size() > 1) {
+                if (length == 2) {
+                    rulesList.addAll(highConfRulesWithOneConsequent);
+                } else {
                     List<Rule> highConfRules = generateMoreRules(highConfRulesWithOneConsequent, itemsetsWithComma);
                     rulesList.addAll(highConfRules);
                 }
@@ -77,12 +78,15 @@ public class GenerateRule {
         Set<String> allValuesSet = new HashSet<>(Arrays.asList(itemsetsWithComma.split(",")));
         Set<String> consequentSet = new HashSet<>();
 
+
         List<String> allOneConsequents = highConfRules.stream()
                 .map(Rule::getEnd)
                 .collect(Collectors.toList());
 
+//        this.pruningCount += (Math.pow(2, allOneConsequents.size()) - 2);
+
         List<String> allSuperSets = getSuperSets(allOneConsequents, itemsetsWithComma);
-//        this.pruningCount += allSuperSets.size();
+        this.pruningCount += allSuperSets.size() - highConfRules.size();
 
         getRules(itemsetsWithComma, mergedRules, allValuesSet, consequentSet, allSuperSets);
 
@@ -166,7 +170,9 @@ public class GenerateRule {
             }
         }
 
-        this.pruningCount += Math.pow(2, rules.size()) - 2;
+//        if (rules.size() > 0) {
+//            this.pruningCount += (Math.pow(2, rules.size()) - 2);
+//        }
         return rules;
     }
 

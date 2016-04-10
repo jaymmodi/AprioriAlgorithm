@@ -1,7 +1,7 @@
-/media/jay/DDrive/Jay/IUB/Spring 2016/Assignment-4/DataSets/Cars/data.csv
-6
-buying,maint,doors,persons,lug_boot,safety
-categorical,categorical,categorical,categorical,categorical,categorical
+/media/jay/DDrive/Jay/IUB/Spring 2016/Assignment-4/DataSets/Solar Flare/data.csv
+12
+zurich,spot size,spot_dist,activity,evolution,ac_code,hist_complex,sun's_disk,area,area_lar_spot,c,m
+categorical,categorical,categorical,categorical,categorical,categorical,categorical,categorical,categorical,categorical,categorical,categorical
 0.1
-0.1
+0.4
 Confidence
