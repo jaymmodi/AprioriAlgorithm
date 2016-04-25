@@ -147,10 +147,13 @@ public class Driver {
             } else {
                 String attributeName = dataSet.getAttributeNames().get(i);
 
-                insertInMap(distinctValuesPerAttribute, attributeName, values[i]);
+                if (dataSet.getAttributeTypes().get(i).equalsIgnoreCase("categorical")) {
+                    insertInMap(distinctValuesPerAttribute, attributeName, values[i]);
+                }
             }
         }
     }
+
 
     private static void insertInMap(HashMap<String, Set<String>> distinctValuesPerAttribute, String key, String value) {
 
@@ -177,6 +180,8 @@ public class Driver {
             dataSet.setAttributeNames(Arrays.asList(bufferedReader.readLine().split(",")));
 
             dataSet.setAttributeTypes(Arrays.asList(bufferedReader.readLine().split(",")));
+
+            dataSet.setClassLabelType(bufferedReader.readLine());
 
             dataSet.setSupportThreshold(Double.parseDouble(bufferedReader.readLine()));
             dataSet.setConfidenceThreshold(Double.parseDouble(bufferedReader.readLine()));

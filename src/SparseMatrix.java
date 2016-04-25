@@ -44,15 +44,32 @@ public class SparseMatrix {
 
             for (int valueIndex = 0; valueIndex < splitValues.length; valueIndex++) {
                 String itemset;
+                int itemSetId = 0;
+                String type;
 
                 if (valueIndex != splitValues.length - 1) {
-                    itemset = this.dataSet.getAttributeNames().get(valueIndex) + "_" + splitValues[valueIndex];
+                    type = this.dataSet.getAttributeTypes().get(valueIndex);
+
+                    if (type.equalsIgnoreCase("categorical")) {
+                        itemset = this.dataSet.getAttributeNames().get(valueIndex) + "_" + splitValues[valueIndex];
+                        itemSetId = this.itemsetVsId.get(itemset);
+                        insertInMap(i, itemSetId);
+                    } else if (type.equalsIgnoreCase("binary")) {
+                        if (splitValues[valueIndex].equals(String.valueOf(1))) {
+                            itemset = this.dataSet.getAttributeNames().get(valueIndex);
+                            itemSetId = this.itemsetVsId.get(itemset);
+                            insertInMap(i, itemSetId);
+                        }
+                    }
+
+
                 } else {
                     itemset = splitValues[valueIndex];
-                }
-                int itemSetId = this.itemsetVsId.get(itemset);
+                    itemSetId = this.itemsetVsId.get(itemset);
 
-                insertInMap(i, itemSetId);
+                    insertInMap(i, itemSetId);
+                }
+
             }
         }
         System.out.println("SparseMatrix Created");

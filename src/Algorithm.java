@@ -49,6 +49,7 @@ public class Algorithm {
         System.out.println("Candidates = " + candidatesItemsetsFor2.size());
         totalCandidateSize += candidatesItemsetsFor2.size();
         List<Set<String>> freqItemsetsHighK = getFrequentItemsets(candidatesItemsetsFor2, k);
+        System.out.println(freqItemsetsHighK);
 
         if (freqItemsetsHighK != null) {
             System.out.println("Frequent = " + freqItemsetsHighK.size());

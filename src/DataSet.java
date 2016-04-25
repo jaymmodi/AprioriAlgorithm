@@ -15,6 +15,7 @@ public class DataSet {
     private Double confidenceThreshold;
     private Double supportThreshold;
     private String ruleEvaluation;
+    private String classLabelType;
 
     public DataSet() {
         this.distinctValuesPerColumn = new HashMap<>();
@@ -98,10 +99,17 @@ public class DataSet {
         HashMap<String, Integer> itemsetsVsId = new HashMap<>();
 
         int id = 1;
+
         for (String attributeName : attributeNames) {
-            Set<String> distinctValues = this.getDistinctValuesPerColumn().get(attributeName);
-            for (String distinctValue : distinctValues) {
-                itemsetsVsId.put(attributeName + "_" + distinctValue, id);
+            String type = this.attributeTypes.get(id - 1);
+            if (type.equalsIgnoreCase("categorical")) {
+                Set<String> distinctValues = this.getDistinctValuesPerColumn().get(attributeName);
+                for (String distinctValue : distinctValues) {
+                    itemsetsVsId.put(attributeName + "_" + distinctValue, id);
+                    id++;
+                }
+            } else if (type.equalsIgnoreCase("binary")) {
+                itemsetsVsId.put(attributeName, id);
                 id++;
             }
         }
@@ -124,5 +132,13 @@ public class DataSet {
 
     public void setRuleEvaluation(String ruleEvaluation) {
         this.ruleEvaluation = ruleEvaluation;
+    }
+
+    public void setClassLabelType(String classLabelType) {
+        this.classLabelType = classLabelType;
+    }
+
+    public String getClassLabelType() {
+        return classLabelType;
     }
 }
