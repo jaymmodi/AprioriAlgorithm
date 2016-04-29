@@ -57,23 +57,38 @@ public class Driver {
             return ((zeroCheck && team1gt300) || (oneCheck && team1lt200));
         };
 
-        allRules.stream()
+        List<Rule> filteredRules = allRules.stream()
                 .filter(rule -> rule.getSource().split(",").length + rule.getEnd().split(",").length <= 3)
                 .filter(classLabelPredicate)
                 .filter(rule -> rule.getSourceEndTogether() / (double) size < 0.05)
                 .filter(rule -> rule.getLift() * size >= 1.4)
                 .filter(rule -> rule.getConfidence() > 0.6 && rule.getConfidence() < 0.8)
-                .sorted(getConfidenceComparator())
-                .forEach(rule -> System.out.println(rule.getSource() + " -> " + rule.getEnd() + " Confidence " + rule.getConfidence() + " Support " + rule.getSourceEndTogether() + " Lift " + rule.getLift() * size));
+                .collect(Collectors.toList());
 
 
-        printInterestingRules();
-
+        printInterestingRules(filteredRules, size);
 
     }
 
-    private static void printInterestingRules() {
+    private static void printInterestingRules(List<Rule> filteredRules, int size) {
+        printFilteredRules(filteredRules, "Team1_gt_300", size);
+        printFilteredRules(filteredRules, "Team1_lt_200", size);
+    }
 
+    private static void printFilteredRules(List<Rule> filteredRules, String filter, int size) {
+
+        System.out.println("******************************************************************");
+        Predicate<Rule> moreThan300 = (rule) -> {
+
+            String ruleString = rule.getSource() + "," + rule.getEnd();
+            String[] values = ruleString.split(",");
+
+            return Arrays.stream(values).anyMatch(s -> s.trim().equals(filter));
+        };
+
+        filteredRules.stream()
+                .filter(moreThan300)
+                .forEach(rule -> System.out.println(rule.getSource() + " -> " + rule.getEnd() + " Confidence " + rule.getConfidence() + " Support " + rule.getSourceEndTogether() + " Lift " + rule.getLift() * size));
 
     }
 
