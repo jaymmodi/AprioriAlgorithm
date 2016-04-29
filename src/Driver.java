@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -37,18 +38,47 @@ public class Driver {
         System.out.println("Prune Count= " + generateRule.getPruningCount());
         System.out.println("savings = " + generateRule.getSavings() + " % ");
 
-        if (dataSet.getRuleEvaluation().equals("Lift")) {
-            printTopRules(allRules, "2", sparseMatrix.getIdVsIsPresentMap().size());
-        } else {
-            printTopRules(allRules, "1", sparseMatrix.getIdVsIsPresentMap().size());
-        }
+        int size = sparseMatrix.getIdVsIsPresentMap().size();
+//        if (dataSet.getRuleEvaluation().equals("Lift")) {
+//            printTopRules(allRules, "2", sparseMatrix.getIdVsIsPresentMap().size());
+//        } else {
+//            printTopRules(allRules, "1", sparseMatrix.getIdVsIsPresentMap().size());
+//        }
 
-//        allRules.stream().forEach(rule -> System.out.println(rule.getSource() + " " + rule.getEnd()));
+        Predicate<Rule> classLabelPredicate = rule -> {
+            String ruleString = rule.getSource() + "," + rule.getEnd();
+            String[] values = ruleString.split(",");
+
+            boolean zeroCheck = Arrays.stream(values).anyMatch(s -> s.trim().equals("0"));
+            boolean team1gt300 = Arrays.stream(values).anyMatch(s -> s.trim().equals("Team1_gt_300"));
+            boolean oneCheck = Arrays.stream(values).anyMatch(s -> s.trim().equals("1"));
+            boolean team1lt200 = Arrays.stream(values).anyMatch(s -> s.trim().equals("Team1_lt_200"));
+
+            return ((zeroCheck && team1gt300) || (oneCheck && team1lt200));
+        };
+
+        allRules.stream()
+                .filter(rule -> rule.getSource().split(",").length + rule.getEnd().split(",").length <= 3)
+                .filter(classLabelPredicate)
+                .filter(rule -> rule.getSourceEndTogether() / (double) size < 0.05)
+                .filter(rule -> rule.getLift() * size >= 1.4)
+                .filter(rule -> rule.getConfidence() > 0.6 && rule.getConfidence() < 0.8)
+                .sorted(getConfidenceComparator())
+                .forEach(rule -> System.out.println(rule.getSource() + " -> " + rule.getEnd() + " Confidence " + rule.getConfidence() + " Support " + rule.getSourceEndTogether() + " Lift " + rule.getLift() * size));
+
+
+        printInterestingRules();
+
 
     }
 
-    private static void printTopRules(List<Rule> allRules, String ruleEvaluation, int size) {
-        Comparator<Rule> confidenceComparator = (r1, r2) -> {
+    private static void printInterestingRules() {
+
+
+    }
+
+    private static Comparator<Rule> getConfidenceComparator() {
+        return (r1, r2) -> {
 
             if (r1.getConfidence() > r2.getConfidence()) {
                 return -1;
@@ -58,6 +88,9 @@ public class Driver {
                 return 0;
             }
         };
+    }
+
+    private static void printTopRules(List<Rule> allRules, String ruleEvaluation, int size) {
 
         Comparator<Rule> liftComparator = (r1, r2) -> {
 
@@ -74,7 +107,7 @@ public class Driver {
 
         if (ruleEvaluation.equalsIgnoreCase("1")) {
             print.addAll(allRules.stream()
-                    .sorted(confidenceComparator)
+                    .sorted(getConfidenceComparator())
                     .limit(10)
                     .collect(Collectors.toList()));
 

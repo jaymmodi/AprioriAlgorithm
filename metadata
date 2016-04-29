@@ -1,8 +1,8 @@
-/media/jay/DDrive/Jay/IUB/Spring 2016/FinalProject/cricket_without_Filename.csv
-26
-Team1 Won Toss, Team2 Won Toss, Team1 Home, Team2 Home, Team1 Away, Team2 Away,  Team1 > 300, Team1 < 200, Team1 b/w 200 and 300, Team2(till 25th over) >= 200, Team2(till 25th over) b/w 200 and 150,  Team2(till 25th over) b/w 150 and 100, Team2(till 25th over) < 100, Team2 Wickets(till 25th over) <=2, Team2 Wickets(till 25th over) b/w 2 and 4, Team2 Wickets(till 25th over) b/w 4 and 6,  Team2 Wickets(till 25th over) > 6, Team1 - Team2(Rank Diff): 1, Team1 - Team2(Rank Diff): 2,  Team1 - Team2(Rank Diff): 3, Team1 - Team2(Rank Diff): >=4,  Team2 - Team1(Rank Diff): 1, Team2 - Team1(Rank Diff): 2, Team2 - Team1(Rank Diff): 3,  Team2 - Team1(Rank Diff): >=4, Team1 Won
-binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary
+/media/jay/DDrive/Jay/IUB/Spring 2016/FinalProject/cricket_teamRank_diff.csv
+18
+Team1_Won_Toss,Team2_Won_Toss,Team1_Home, Team2_Home, Neutral,Team1_gt_300, Team1_lt_200, Team1_b/w_200_and_300, Team2(till 25th over)_gt_200,Team2(till 25th over)_b/w_200_and_150, Team2(till 25th over)_b/w_150_and_100, Team2(till 25th over)_lt_100, Team2 Wickets(till 25th over)_lt_2, Team2 Wickets(till 25th over)_b/w 2_and_4, Team2 Wickets(till 25th over)_b/w 4_and_6,  17_Team2 Wickets(till 25th over)_gt_6,Team1>Team2,Team2>Team1
+binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary
 binary
-0.2
-0.4
+0.01
+0.5
 Confidence
