@@ -58,7 +58,6 @@ public class Driver {
         };
 
         List<Rule> filteredRules = allRules.stream()
-                .filter(rule -> rule.getSource().split(",").length + rule.getEnd().split(",").length <= 3)
                 .filter(classLabelPredicate)
                 .filter(rule -> rule.getSourceEndTogether() / (double) size < 0.05)
                 .filter(rule -> rule.getLift() * size >= 1.4)
@@ -88,6 +87,7 @@ public class Driver {
 
         filteredRules.stream()
                 .filter(moreThan300)
+                .sorted(getConfidenceComparator())
                 .forEach(rule -> System.out.println(rule.getSource() + " -> " + rule.getEnd() + " Confidence " + rule.getConfidence() + " Support " + rule.getSourceEndTogether() + " Lift " + rule.getLift() * size));
 
     }
